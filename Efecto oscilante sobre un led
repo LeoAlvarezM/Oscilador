@@ -1,0 +1,66 @@
+PROCESSOR 16F887
+#include <xc.inc>
+    
+    ;CONFIG word1
+    CONFIG FOSC = INTRC_NOCLKOUT
+    CONFIG WDTE = OFF
+    CONFIG PWRTE = ON
+    CONFIG MCLRE = OFF
+    CONFIG CP = OFF
+    CONFIG CPD = OFF
+    CONFIG BOREN = OFF
+    CONFIG IESO = OFF
+    CONFIG FCMEN = ON
+    CONFIG DEBUG = ON
+
+    ;CONFIG word2
+    CONFIG BOR4V=BOR40V
+    CONFIG WRT = OFF
+    
+    PSECT udata
+ 
+ pausa:
+    DS 1
+ pausa2:
+    DS 1
+ pausa3:
+    DS 1
+    
+    PSECT resetVec, class=CODE, delta=2
+    
+resetVec:
+    PAGESEL main
+    goto main
+    
+PSECT code
+ledderecha:
+    bcf STATUS, 0
+    rrf PORTA, 1       ;Acarreo hacia la derecha
+    btfss PORTA, 0     ;Revisar el bit de esta posición
+    goto ledderecha
+    PAGESEL main
+    return
+    
+ledizquierda:
+    bcf STATUS, 0
+    rlf PORTA, 1      ;Acarreo hacia la izquierda
+    btfss PORTA, 7    ;Revisar el bit de esta posición
+    goto ledizquierda
+    PAGESEL main
+    return
+    
+main:
+    BANKSEL PORTA
+    clrf PORTA
+    BANKSEL ANSEL
+    clrf ANSEL
+    BANKSEL TRISA
+    clrf TRISA
+    loop:
+    BANKSEL PORTA
+    movlw 0x80   ;10000000
+    movwf PORTA
+    call ledderecha
+    call ledizquierda
+    goto loop
+    END
